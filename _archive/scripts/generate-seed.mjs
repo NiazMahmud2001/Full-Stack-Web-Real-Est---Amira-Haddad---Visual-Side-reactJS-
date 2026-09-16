@@ -1,0 +1,143 @@
+// ---------------------------------------------------------------------------
+// ARCHIVED — the website doesn't use this. It is kept in case you ever want to
+// rebuild supabase/seed.sql from the original data in _archive/content:
+//
+//   node _archive/scripts/generate-seed.mjs
+//
+// It overwrites supabase/seed.sql. The live data is in Supabase — edit it in
+// the Table Editor.
+// ---------------------------------------------------------------------------
+import { writeFileSync } from "node:fs";
+import { AGENT, SOCIALS } from "../content/agent.js";
+import { HERO_FRAMES, CITY_FRAMES, HERO_VIDEO, PHOTO } from "../content/media.js";
+import { UAE_AREAS } from "../content/uaeAreas.js";
+import { DEMO_LISTINGS } from "../content/demoListings.js";
+
+// --- JavaScript values → SQL values -----------------------------------------
+
+// Text goes in single quotes, and a quote inside the text is written twice.
+const text = (value) =>
+  value === null || value === undefined ? "null" : `'${String(value).replaceAll("'", "''")}'`;
+
+const number = (value) => {
+  if (value === null || value === undefined) return "null";
+  if (!Number.isFinite(value)) throw new Error(`Expected a number but got: ${value}`);
+  return String(value);
+};
+
+const boolean = (value) => (value ? "true" : "false");
+
+const textArray = (list) =>
+  list && list.length ? `array[${list.map(text).join(", ")}]` : "'{}'::text[]";
+
+const jsonb = (value) => `${text(JSON.stringify(value))}::jsonb`;
+
+/**
+ * One plain `insert … values …` statement for a table. `on conflict do nothing`
+ * skips rows that are already there, so running the file twice is harmless.
+ */
+function insert(table, rows) {
+  const columns = Object.keys(rows[0]);
+  const values = rows.map((row) => `  (${columns.map((c) => row[c]).join(", ")})`).join(",\n");
+  return `insert into ${table} (${columns.join(", ")}) values\n${values}\non conflict do nothing;\n`;
+}
+
+// --- 1. agent ---------------------------------------------------------------
+const agentRows = [
+  {
+    id: number(1),
+    name: text(AGENT.name),
+    initials: text(AGENT.initials),
+    role: text(AGENT.role),
+    brand: text(AGENT.brand),
+    tagline: text(AGENT.tagline),
+    licence: text(AGENT.licence),
+    agency: text(AGENT.agency),
+    phone: text(AGENT.phone),
+    whatsapp: text(AGENT.whatsapp),
+    email: text(AGENT.email),
+    office_hours: text(AGENT.officeHours),
+    languages: textArray(AGENT.languages),
+    years_active: number(AGENT.yearsActive),
+    bio: textArray(AGENT.bio),
+    credentials: jsonb(AGENT.credentials),
+    // The site builds the WhatsApp link from `whatsapp`, so it isn't stored twice.
+    socials: jsonb(SOCIALS.filter((s) => s.label !== "WhatsApp"))
+  }
+];
+
+// --- 2. media ---------------------------------------------------------------
+const mediaRows = [];
+const addMedia = (key, kind, url) =>
+  mediaRows.push({ key: text(key), kind: text(kind), url: text(url), sort_order: number(mediaRows.length + 1) });
+
+HERO_FRAMES.forEach((url, i) => addMedia(`hero_frame_${i + 1}`, "hero_frame", url));
+CITY_FRAMES.forEach((url, i) => addMedia(`city_frame_${i + 1}`, "city_frame", url));
+addMedia("hero_video", "hero_video", HERO_VIDEO);
+Object.entries(PHOTO).forEach(([key, url]) => addMedia(key, "photo", url));
+
+// --- 3. uae_areas -----------------------------------------------------------
+const areaRows = UAE_AREAS.map((a, i) => ({
+  name: text(a.name),
+  emirate: text(a.emirate),
+  aliases: textArray(a.aliases),
+  lat: number(a.center[0]),
+  lng: number(a.center[1]),
+  sort_order: number(i + 1)
+}));
+
+// --- 4. listings ------------------------------------------------------------
+// The database refuses a listing whose area isn't in uae_areas, so catch that
+// here with a clearer message.
+const areaNames = new Set(UAE_AREAS.map((a) => a.name));
+for (const p of DEMO_LISTINGS) {
+  if (!areaNames.has(p.area)) {
+    throw new Error(`Listing "${p.id}" is in "${p.area}", which is not in UAE_AREAS (_archive/content/uaeAreas.js).`);
+  }
+}
+
+const listingRows = DEMO_LISTINGS.map((p, i) => ({
+  id: text(p.id),
+  title: text(p.title),
+  area: text(p.area),
+  address: text(p.address),
+  price_aed: number(p.price_aed),
+  listing_type: text(p.listing_type),
+  property_type: text(p.property_type),
+  bedrooms: number(p.bedrooms),
+  bathrooms: number(p.bathrooms),
+  size_sqft: number(p.size_sqft),
+  description: text(p.description),
+  image_url: text(p.image_url),
+  image_urls: textArray(p.image_urls),
+  amenities: textArray(p.amenities),
+  lat: number(p.lat),
+  lng: number(p.lng),
+  is_demo: boolean(p.is_demo),
+  sort_order: number(i + 1)
+}));
+
+// --- Write the file ---------------------------------------------------------
+const sql = `-- ============================================================================
+-- seed.sql — the rows for the agent, media, uae_areas and listings tables.
+-- Generated by _archive/scripts/generate-seed.mjs from _archive/content.
+--
+-- Run it in Supabase → SQL Editor after the tables have been created.
+-- Running it again is harmless: rows that already exist are skipped. To change
+-- a row later, edit it in the Supabase Table Editor.
+-- ============================================================================
+
+-- 1. agent (${agentRows.length} row)
+${insert("agent", agentRows)}
+-- 2. media (${mediaRows.length} rows)
+${insert("media", mediaRows)}
+-- 3. uae_areas (${areaRows.length} rows) — before listings, because every listing's area must exist here
+${insert("uae_areas", areaRows)}
+-- 4. listings (${listingRows.length} rows)
+${insert("listings", listingRows)}`;
+
+writeFileSync(new URL("../../supabase/seed.sql", import.meta.url), sql);
+console.log(
+  `Wrote supabase/seed.sql: ${agentRows.length} agent, ${mediaRows.length} media, ` +
+    `${areaRows.length} areas, ${listingRows.length} listings.`
+);

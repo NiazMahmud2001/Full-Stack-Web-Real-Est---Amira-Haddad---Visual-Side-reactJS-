@@ -1,0 +1,356 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* --- shadcn tokens, tuned to the sage / ink / brass brand palette --- */
+    --background: 132 12% 91%; /* #E5EAE6 sand  */
+    --foreground: 137 14% 10%; /* #151C17 ink   */
+    --card: 142 10% 84%; /* #D2DAD5 sage  */
+    --card-foreground: 137 14% 10%;
+    --popover: 132 20% 95%;
+    --popover-foreground: 137 14% 10%;
+    --primary: 137 14% 10%;
+    --primary-foreground: 132 12% 93%;
+    --secondary: 142 10% 84%;
+    --secondary-foreground: 137 14% 10%;
+    --muted: 142 10% 88%;
+    --muted-foreground: 140 8% 36%;
+    --accent: 36 36% 52%; /* #B08D57 brass */
+    --accent-foreground: 137 14% 10%;
+    --destructive: 6 62% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 140 9% 79%;
+    --input: 140 9% 79%;
+    --ring: 36 36% 52%;
+    --chart-1: 153 33% 27%;
+    --chart-2: 36 36% 52%;
+    --chart-3: 137 14% 20%;
+    --chart-4: 142 10% 66%;
+    --chart-5: 24 40% 62%;
+    --radius: 0.75rem;
+
+    --font-heading: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-body: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    --sidebar-background: 132 20% 95%;
+    --sidebar-foreground: 140 8% 26%;
+    --sidebar-primary: 137 14% 10%;
+    --sidebar-primary-foreground: 132 12% 93%;
+    --sidebar-accent: 142 10% 88%;
+    --sidebar-accent-foreground: 137 14% 10%;
+    --sidebar-border: 140 9% 79%;
+    --sidebar-ring: 36 36% 52%;
+  }
+
+  .dark {
+    --background: 137 14% 7%;
+    --foreground: 132 12% 93%;
+    --card: 137 14% 11%;
+    --card-foreground: 132 12% 93%;
+    --popover: 137 14% 11%;
+    --popover-foreground: 132 12% 93%;
+    --primary: 132 12% 93%;
+    --primary-foreground: 137 14% 10%;
+    --secondary: 137 12% 16%;
+    --secondary-foreground: 132 12% 93%;
+    --muted: 137 12% 16%;
+    --muted-foreground: 140 7% 62%;
+    --accent: 36 36% 52%;
+    --accent-foreground: 137 14% 10%;
+    --destructive: 6 55% 38%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 137 10% 20%;
+    --input: 137 10% 20%;
+    --ring: 36 36% 52%;
+    --chart-1: 153 30% 45%;
+    --chart-2: 36 40% 60%;
+    --chart-3: 132 12% 80%;
+    --chart-4: 142 10% 40%;
+    --chart-5: 24 40% 55%;
+    --sidebar-background: 137 14% 9%;
+    --sidebar-foreground: 132 12% 90%;
+    --sidebar-primary: 36 36% 52%;
+    --sidebar-primary-foreground: 137 14% 10%;
+    --sidebar-accent: 137 12% 16%;
+    --sidebar-accent-foreground: 132 12% 93%;
+    --sidebar-border: 137 10% 20%;
+    --sidebar-ring: 36 36% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: #b08d57;
+    color: #f1f4f0;
+  }
+
+  /* Display type is a high-contrast serif — it wants slightly tighter tracking. */
+  .font-display {
+    font-weight: 400;
+    letter-spacing: -0.012em;
+  }
+
+  /* --- Lenis / Locomotive Scroll v5 (native scroll, no transform hijack) --- */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  /* --- scrollbar --- */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #d2dad5;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #9fada4;
+    border-radius: 999px;
+    border: 3px solid #d2dad5;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #b08d57;
+  }
+}
+
+@layer components {
+  /* Eyebrow / label type used across every section. */
+  .eyebrow {
+    @apply font-heading text-[10px] font-medium uppercase tracking-label text-ink-mute;
+  }
+
+  /* Thin rule with a brass tick, used as a section divider. */
+  .rule {
+    @apply relative h-px w-full bg-ink/10;
+  }
+  .rule::after {
+    content: "";
+    @apply absolute left-0 top-1/2 h-1 w-1 -translate-y-1/2 rounded-full bg-brass;
+  }
+
+  /* Frosted surfaces used by the nav and floating panels. */
+  .glass {
+    background: rgba(229, 234, 230, 0.72);
+    backdrop-filter: saturate(140%) blur(14px);
+    -webkit-backdrop-filter: saturate(140%) blur(14px);
+  }
+
+  .glass-dark {
+    background: rgba(21, 28, 23, 0.6);
+    backdrop-filter: saturate(140%) blur(14px);
+    -webkit-backdrop-filter: saturate(140%) blur(14px);
+  }
+}
+
+@layer utilities {
+  /* Film-grain overlay — sits above imagery, never intercepts pointers. */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: var(--grain-url);
+    background-size: 160px 160px;
+  }
+
+  /* Wraps a line of split text so it can slide up from behind a mask. */
+  .line-mask {
+    overflow: hidden;
+    display: block;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Set on a rail while it is being dragged, so the pan doesn't sweep a text
+     selection across the cards it passes over. */
+  [data-dragging="true"],
+  [data-dragging="true"] * {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Animated underline for inline links. */
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: left bottom;
+    transition: background-size 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .link-underline:hover {
+    background-size: 100% 1px;
+  }
+}
+
+:root {
+  --grain-url: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+}
+
+/* --- Custom cursor -------------------------------------------------------
+   Only engaged on fine pointers; `cursor-none` is set on <html> by the
+   CustomCursor component so touch users keep the native cursor. */
+html.cursor-none,
+html.cursor-none * {
+  cursor: none !important;
+}
+
+.cursor-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.cursor-ring {
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 1px solid rgba(21, 28, 23, 0.5);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cursor-dot {
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 999px;
+  background: #151c17;
+  transition: opacity 0.25s ease;
+}
+
+.cursor-label {
+  font-family: var(--font-heading);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #f1f4f0;
+  opacity: 0;
+  transform: scale(0.55);
+  white-space: nowrap;
+}
+
+/* Cursor variants driven by [data-cursor] on the hovered element. */
+.cursor-root[data-state="link"] .cursor-ring {
+  background: rgba(176, 141, 87, 0.18);
+  border-color: rgba(176, 141, 87, 0.9);
+}
+.cursor-root[data-state="view"] .cursor-ring {
+  background: #151c17;
+  border-color: #151c17;
+}
+/* Over a map the cursor must not hide what is under it: an outline and the
+   centre dot, no fill and no label. */
+.cursor-root[data-state="drag"] .cursor-ring {
+  background: transparent;
+  border-color: rgba(176, 141, 87, 0.9);
+  border-width: 1.5px;
+}
+.cursor-root[data-state="view"] .cursor-label {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s 0.06s ease, transform 0.35s 0.06s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cursor-root[data-state="view"] .cursor-dot,
+.cursor-root[data-state="text"] .cursor-dot {
+  opacity: 0;
+}
+.cursor-root[data-state="drag"] .cursor-dot {
+  background: #b08d57;
+}
+.cursor-root[data-state="text"] .cursor-ring {
+  background: transparent;
+  border-color: transparent;
+}
+.cursor-root[data-state="dark"] .cursor-ring {
+  border-color: rgba(241, 244, 240, 0.7);
+}
+.cursor-root[data-state="dark"] .cursor-dot {
+  background: #f1f4f0;
+}
+
+/* --- MapLibre, re-skinned to the brand ---------------------------------- */
+.maplibregl-ctrl-group {
+  background: rgba(229, 234, 230, 0.92) !important;
+  border-radius: 999px !important;
+  overflow: hidden;
+  border: 1px solid rgba(21, 28, 23, 0.08) !important;
+  box-shadow: 0 18px 40px -24px rgba(21, 28, 23, 0.7) !important;
+}
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid rgba(21, 28, 23, 0.1) !important;
+}
+.maplibregl-ctrl-group button:hover {
+  background: rgba(176, 141, 87, 0.18) !important;
+}
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  background: rgba(229, 234, 230, 0.86) !important;
+  border-radius: 999px !important;
+  font-family: var(--font-body);
+}
+.maplibregl-ctrl-attrib a {
+  color: #3a473d !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
