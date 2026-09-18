@@ -16,4 +16,10 @@ export default defineConfig({
     // builds must emit workers in that same format (see src/lib/maplibre.js).
     format: 'es',
   },
+  // `vite preview` rejects requests whose Host header it doesn't recognise.
+  // Render serves the app on *.onrender.com, so allow that domain (the leading
+  // dot covers every subdomain). Add your custom domain here too if you add one.
+  preview: {
+    allowedHosts: ['.onrender.com'],
+  },
 })
